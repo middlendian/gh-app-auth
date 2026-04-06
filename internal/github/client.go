@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -15,7 +16,7 @@ type Client struct {
 func NewClient(baseURL string) *Client {
 	return &Client{
 		baseURL:    baseURL,
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -34,6 +35,7 @@ func (c *Client) do(ctx context.Context, method string, path string, jwt string,
 	}
 	req.Header.Set("Authorization", "Bearer "+jwt)
 	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

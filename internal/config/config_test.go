@@ -33,6 +33,18 @@ func TestLoad_MissingAppID(t *testing.T) {
 	}
 }
 
+func TestLoad_NonNumericAppID(t *testing.T) {
+	t.Setenv("GH_APP_ID", "not-a-number")
+	t.Setenv("GH_APP_PRIVATE_KEY", "")
+	t.Setenv("GH_APP_PRIVATE_KEY_FILE", "")
+	t.Setenv("GH_APP_INSTALLATION_ID", "")
+
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected error for non-numeric GH_APP_ID")
+	}
+}
+
 func TestLoad_MissingPrivateKey(t *testing.T) {
 	t.Setenv("GH_APP_ID", "12345")
 	t.Setenv("GH_APP_PRIVATE_KEY", "")

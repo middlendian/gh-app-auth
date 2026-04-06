@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -18,6 +19,9 @@ func Load() (*Config, error) {
 	appID := os.Getenv("GH_APP_ID")
 	if appID == "" {
 		return nil, fmt.Errorf("GH_APP_ID is required (the GitHub App's numeric ID)")
+	}
+	if _, err := strconv.ParseInt(appID, 10, 64); err != nil {
+		return nil, fmt.Errorf("GH_APP_ID must be a numeric ID, got %q", appID)
 	}
 
 	key, err := loadPrivateKey()
@@ -51,9 +55,18 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to parse private key: no PEM block found")
 	}
 
+	// Try PKCS#1 first (GitHub's default), fall back to PKCS#8
 	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key: %w", err)
+		parsed, pkcs8Err := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if pkcs8Err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %w", err)
+		}
+		rsaKey, ok := parsed.(*rsa.PrivateKey)
+		if !ok {
+			return nil, fmt.Errorf("failed to parse private key: not an RSA key")
+		}
+		return rsaKey, nil
 	}
 
 	return key, nil
