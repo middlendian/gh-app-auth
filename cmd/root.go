@@ -7,9 +7,11 @@ import (
 var repo string
 
 var rootCmd = &cobra.Command{
-	Use:   "gh-app-auth",
-	Short: "GitHub App authentication for gh CLI",
-	Long:  "Generate GitHub App installation access tokens for use with gh CLI and other tools.",
+	Use:           "gh-app-auth",
+	Short:         "GitHub App authentication for gh CLI",
+	Long:          "Generate GitHub App installation access tokens for use with gh CLI and other tools.",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func Execute() error {
