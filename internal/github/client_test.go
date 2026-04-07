@@ -20,7 +20,7 @@ func TestClient_Get_Success(t *testing.T) {
 			t.Errorf("Accept = %q, want %q", got, "application/vnd.github+json")
 		}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]any{"id": 42})
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": 42})
 	}))
 	defer server.Close()
 
@@ -43,7 +43,7 @@ func TestClient_Post_Success(t *testing.T) {
 			t.Errorf("method = %q, want POST", r.Method)
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]any{"token": "ghs_abc123"})
+		_ = json.NewEncoder(w).Encode(map[string]any{"token": "ghs_abc123"})
 	}))
 	defer server.Close()
 
@@ -63,7 +63,7 @@ func TestClient_Post_Success(t *testing.T) {
 func TestClient_Get_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]any{"message": "Not Found"})
+		_ = json.NewEncoder(w).Encode(map[string]any{"message": "Not Found"})
 	}))
 	defer server.Close()
 

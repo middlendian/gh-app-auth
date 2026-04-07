@@ -41,7 +41,7 @@ func (c *Client) do(ctx context.Context, method string, path string, jwt string,
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		var apiErr struct {
