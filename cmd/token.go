@@ -48,7 +48,7 @@ func runToken(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Fprint(os.Stdout, token)
+	_, _ = fmt.Fprint(os.Stdout, token)
 	return nil
 }
 

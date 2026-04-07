@@ -51,7 +51,7 @@ func TestGenerateJWT(t *testing.T) {
 	if err != nil {
 		t.Fatalf("get iat: %v", err)
 	}
-	drift := now.Sub(iat.Time)
+	drift := now.Sub(iat.UTC())
 	if drift < 50*time.Second || drift > 70*time.Second {
 		t.Errorf("iat drift = %v, want ~60s", drift)
 	}
@@ -60,7 +60,7 @@ func TestGenerateJWT(t *testing.T) {
 	if err != nil {
 		t.Fatalf("get exp: %v", err)
 	}
-	ttl := exp.Time.Sub(now)
+	ttl := exp.UTC().Sub(now)
 	if ttl < 9*time.Minute || ttl > 11*time.Minute {
 		t.Errorf("ttl = %v, want ~10m", ttl)
 	}

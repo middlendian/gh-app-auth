@@ -16,7 +16,7 @@ func TestGetInstallationID(t *testing.T) {
 			t.Errorf("path = %q, want /repos/owner/repo/installation", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]any{"id": 67890})
+		_ = json.NewEncoder(w).Encode(map[string]any{"id": 67890})
 	}))
 	defer server.Close()
 
@@ -39,7 +39,7 @@ func TestMintToken(t *testing.T) {
 			t.Errorf("method = %q, want POST", r.Method)
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]any{"token": "ghs_abc123"})
+		_ = json.NewEncoder(w).Encode(map[string]any{"token": "ghs_abc123"})
 	}))
 	defer server.Close()
 
@@ -56,7 +56,7 @@ func TestMintToken(t *testing.T) {
 func TestGetInstallationID_NotInstalled(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]any{"message": "Not Found"})
+		_ = json.NewEncoder(w).Encode(map[string]any{"message": "Not Found"})
 	}))
 	defer server.Close()
 
