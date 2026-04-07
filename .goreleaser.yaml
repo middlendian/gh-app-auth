@@ -1,7 +1,6 @@
 version: 2
 
 project_name: gh-app-auth
-dist: _dist
 
 before:
   hooks:
