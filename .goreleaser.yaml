@@ -22,10 +22,15 @@ builds:
       - arm64
 
 archives:
-  - id: gh-app-auth
+  - id: gh-app-auth-binaries
     ids:
       - gh-app-auth
-    name_template: "gh-app-auth-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+    formats: [binary]
+  - id: gh-app-auth-archives
+    ids:
+      - gh-app-auth
+    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     formats: [tar.gz]
     files:
       - src: LICENSE
@@ -34,7 +39,8 @@ checksum:
   name_template: "checksums.txt"
 
 brews:
-  - name: gh-app-auth
+  - ids: [gh-app-auth-archives]
+    name: gh-app-auth
     repository:
       owner: middlendian
       name: homebrew-tap
