@@ -29,3 +29,19 @@ archives:
 
 checksum:
   name_template: "checksums.txt"
+
+brews:
+  - name: gh-app-auth
+    repository:
+      owner: middlendian
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    homepage: "https://github.com/middlendian/gh-app-auth"
+    description: "GitHub CLI extension for GitHub App authentication"
+    license: "GPL-3.0-only"
+    test: |
+      assert_predicate bin/"gh-app-auth", :executable?
