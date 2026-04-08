@@ -9,9 +9,6 @@ jobs:
   release:
     name: GoReleaser
     runs-on: ubuntu-latest
-    environment:
-      name: middlendian/tap
-      url: https://github.com/middlendian/homebrew-tap/blob/main/Formula/gh-app-auth.rb
     permissions:
       contents: write
     steps:
@@ -31,4 +28,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}

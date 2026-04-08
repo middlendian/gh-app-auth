@@ -22,37 +22,10 @@ builds:
       - arm64
 
 archives:
-  - id: gh-app-auth-binaries
-    ids:
+  - ids:
       - gh-app-auth
     name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
     formats: [binary]
-  - id: gh-app-auth-archives
-    ids:
-      - gh-app-auth
-    name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
-    formats: [tar.gz]
-    files:
-      - src: LICENSE
 
 checksum:
   name_template: "checksums.txt"
-
-brews:
-  - ids: [gh-app-auth-archives]
-    name: gh-app-auth
-    repository:
-      owner: middlendian
-      name: homebrew-tap
-      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
-    directory: Formula
-    commit_author:
-      name: goreleaserbot
-      email: bot@goreleaser.com
-    homepage: "https://github.com/middlendian/gh-app-auth"
-    description: "GitHub CLI extension for GitHub App authentication"
-    license: "GPL-3.0-only"
-    install: |
-      bin.install "gh-app-auth"
-    test: |
-      assert_predicate bin/"gh-app-auth", :executable?
