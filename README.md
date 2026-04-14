@@ -35,6 +35,18 @@ export GH_TOKEN=$(gh app-auth token)
 | `GH_APP_PRIVATE_KEY_FILE` | One of these | Path to PEM-encoded private key file |
 | `GH_APP_INSTALLATION_ID` | No | Explicit installation ID (skips auto-discovery) |
 
+## Git Credential Helper
+
+`gh-app-auth` can act as a [Git credential helper](https://git-scm.com/docs/gitcredentials), so that `git clone`, `git fetch`, `git push`, and other operations authenticate automatically using your GitHub App.
+
+```sh
+git config --global credential.https://github.com.helper '!gh-app-auth git-credential'
+```
+
+With this configured, any HTTPS Git operation against `github.com` will request a short-lived installation token from your App. Git sends the repository path to the helper, so the correct installation is resolved automatically — no `--repo` flag needed.
+
+The helper only responds to `https://github.com` requests. Other hosts and protocols are left to your existing credential helpers.
+
 ## Shell Completions
 
 ```sh
