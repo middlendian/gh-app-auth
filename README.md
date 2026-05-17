@@ -21,10 +21,49 @@ export GH_TOKEN=$(gh app-auth token)
 # Get a token for a specific repo
 export GH_TOKEN=$(gh app-auth token --repo owner/repo)
 
-# Or provide the installation ID directly
+# Get a token for a specific installation ID (skips repo-slug lookup)
+export GH_TOKEN=$(gh app-auth token --installation-id 67890)
+
+# Or provide the installation ID via env var
 export GH_APP_INSTALLATION_ID=67890
 export GH_TOKEN=$(gh app-auth token)
 ```
+
+### Enumerate every installation
+
+When you need to fan a request out across every org or user the App is
+installed on, list the installations first and pick out the IDs:
+
+```sh
+gh app-auth installations list
+# [
+#   { "id": 12345678, "account": { "login": "alice",    "type": "User" } },
+#   { "id": 87654321, "account": { "login": "acmecorp", "type": "Organization" } }
+# ]
+
+# All org installation IDs:
+gh app-auth installations list | jq -r '.[] | select(.account.type == "Organization") | .id'
+
+# Mint a token for each org and do something with it:
+for id in $(gh app-auth installations list | jq -r '.[].id'); do
+  GH_TOKEN=$(gh app-auth token --installation-id "$id") gh api /installation/repositories
+done
+```
+
+The output is intentionally slim — only `id`, `account.login`, and
+`account.type` — so consumers aren't coupled to the full GitHub schema.
+
+### Installation ID precedence (for `token`)
+
+When `token` figures out which installation to use, it checks, in order:
+
+1. `--installation-id <id>` flag
+2. `GH_APP_INSTALLATION_ID` env var
+3. `--repo owner/repo` flag (then `GET /repos/{owner}/{repo}/installation`)
+4. Git remote discovery in the current directory (same lookup)
+
+`--installation-id` and `--repo` are mutually exclusive — pass one or
+the other.
 
 ## Configuration
 

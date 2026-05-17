@@ -60,6 +60,103 @@ func TestClient_Post_Success(t *testing.T) {
 	}
 }
 
+func TestClient_GetPaginated_ReturnsNextLink(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Link", `<https://api.example.com/foo?page=2>; rel="next", <https://api.example.com/foo?page=5>; rel="last"`)
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode([]map[string]any{{"id": 1}})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL)
+	var result []map[string]any
+	next, err := client.GetPaginated(context.Background(), "/foo", "test-jwt", &result)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if want := "https://api.example.com/foo?page=2"; next != want {
+		t.Errorf("next = %q, want %q", next, want)
+	}
+	if len(result) != 1 {
+		t.Errorf("len(result) = %d, want 1", len(result))
+	}
+}
+
+func TestClient_GetPaginated_NoLinkHeader(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode([]map[string]any{})
+	}))
+	defer server.Close()
+
+	client := NewClient(server.URL)
+	var result []map[string]any
+	next, err := client.GetPaginated(context.Background(), "/foo", "test-jwt", &result)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if next != "" {
+		t.Errorf("next = %q, want empty", next)
+	}
+}
+
+func TestClient_GetPaginated_AbsoluteURL(t *testing.T) {
+	var gotURL string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotURL = r.URL.String()
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode([]map[string]any{})
+	}))
+	defer server.Close()
+
+	client := NewClient("https://api.example.com")
+	var result []map[string]any
+	_, err := client.GetPaginated(context.Background(), server.URL+"/abs?page=3", "test-jwt", &result)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if want := "/abs?page=3"; gotURL != want {
+		t.Errorf("server saw URL %q, want %q", gotURL, want)
+	}
+}
+
+func TestParseNextLink(t *testing.T) {
+	tests := []struct {
+		name   string
+		header string
+		want   string
+	}{
+		{
+			name:   "empty",
+			header: "",
+			want:   "",
+		},
+		{
+			name:   "next and last",
+			header: `<https://api.github.com/foo?page=2>; rel="next", <https://api.github.com/foo?page=5>; rel="last"`,
+			want:   "https://api.github.com/foo?page=2",
+		},
+		{
+			name:   "only last (no next)",
+			header: `<https://api.github.com/foo?page=1>; rel="first", <https://api.github.com/foo?page=5>; rel="last"`,
+			want:   "",
+		},
+		{
+			name:   "next listed second",
+			header: `<https://api.github.com/foo?page=1>; rel="prev", <https://api.github.com/foo?page=3>; rel="next"`,
+			want:   "https://api.github.com/foo?page=3",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseNextLink(tt.header)
+			if got != tt.want {
+				t.Errorf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestClient_Get_APIError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
