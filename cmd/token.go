@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var installationIDFlag int64
+
 var tokenCmd = &cobra.Command{
 	Use:   "token",
 	Short: "Print an installation access token to stdout",
@@ -21,10 +23,18 @@ var tokenCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(tokenCmd)
+	tokenCmd.Flags().Int64Var(&installationIDFlag, "installation-id", 0,
+		"installation ID to mint a token for; skips repo-slug lookup. "+
+			"Precedence: --installation-id > GH_APP_INSTALLATION_ID > --repo > git remote discovery. "+
+			"Mutually exclusive with --repo.")
 }
 
 func runToken(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
+
+	if installationIDFlag != 0 && repo != "" {
+		return fmt.Errorf("--installation-id and --repo are mutually exclusive; pass only one")
+	}
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -53,6 +63,10 @@ func runToken(cmd *cobra.Command, args []string) error {
 }
 
 func resolveInstallationID(ctx context.Context, client *github.Client, jwt string, cfg *config.Config) (int64, error) {
+	if installationIDFlag != 0 {
+		return installationIDFlag, nil
+	}
+
 	if cfg.InstallationID != "" {
 		id, err := strconv.ParseInt(cfg.InstallationID, 10, 64)
 		if err != nil {
